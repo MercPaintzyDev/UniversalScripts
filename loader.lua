@@ -16,8 +16,8 @@ local CoreGui = game:GetService("CoreGui")
 
 local CONFIG = {
     WEBSITE_URL = "https://keysystem-access.vercel.app",
-    VERIFY_API = "https://YOUR-API.com/verify",
-    STATS_API = "https://YOUR-API.com/stats", -- unused
+    VERIFY_API = "https://keysystem-access.vercel.app/verify",
+    STATS_API = "https://keysystem-access.vercel.app/stats", -- unused
     STATS_REFRESH = 30,
     VERSION = "1.0.0"
 }
