@@ -19,7 +19,7 @@ local CONFIG = {
     VERIFY_API = "https://keysystem-access.vercel.app/verify",
     STATS_API = "https://keysystem-access.vercel.app/stats", -- unused
     STATS_REFRESH = 30,
-    VERSION = "1.0.0"
+    VERSION = "1.5.0"
 }
 
 --========================================================
