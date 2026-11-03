@@ -2459,6 +2459,19 @@ print("[FoundationOverlay Standalone] Loaded.")
 end
 
 --========================================================
+-- LOCAL WHITELIST
+--========================================================
+-- Add your valid keys here. 
+-- Any key NOT in this list will instantly fail without making a server request.
+
+local VALID_KEYS = {
+    -- ["ARCHIVE-LABS-VIP"] = true,
+    -- ["COMBO-WICK-2026"] = true,
+    -- Add your keys here like this:
+    -- ["12345"] = true,
+}
+
+--========================================================
 -- VERIFY LICENSE
 --========================================================
 
@@ -2475,43 +2488,22 @@ Verify.MouseButton1Click:Connect(function()
         return
     end
 
-    if CONFIG.VERIFY_API:find("YOUR%-API") then
-        Status.Text = "Configure your verification API first."
-        Status.TextColor3 = Theme.Red
-        return
-    end
-
     verifying = true
     Verify.Text = "VERIFYING..."
     Verify.Active = false
-    Status.Text = "Checking license..."
+    Status.Text = "Checking key..."
     Status.TextColor3 = Theme.Gold
 
     task.spawn(function()
-        local response, err = HTTP(CONFIG.VERIFY_API, "POST", {
-            key = key,
-            user_id = tostring(Player.UserId),
-            username = Player.Name
-        })
+        task.wait(0.4) -- Small fake delay so the UI feels like it's checking
 
         local authorized = false
-        local message = "Verification failed."
+        local message = "Key is not whitelisted."
 
-        if response and response.Success then
-            local ok, data = pcall(function()
-                return HttpService:JSONDecode(response.Body)
-            end)
-
-            if ok and type(data) == "table" then
-                authorized = data.valid == true
-                message = tostring(data.message or "Verification complete.")
-            else
-                message = "Invalid API response."
-            end
-        else
-            message = err or (
-                response and "Server error: " .. tostring(response.StatusCode)
-            ) or "Unable to connect to server."
+        -- Check if the key exists in our local table
+        if VALID_KEYS[key] then
+            authorized = true
+            message = "License accepted."
         end
 
         if authorized then
