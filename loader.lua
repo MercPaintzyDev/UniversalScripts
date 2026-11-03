@@ -15,7 +15,7 @@ local CoreGui = game:GetService("CoreGui")
 --========================================================
 
 local CONFIG = {
-    WEBSITE_URL = "https://YOUR-WEBSITE.com/get-key",
+    WEBSITE_URL = "https://insanity-hub.gt.tc",
     VERIFY_API = "https://YOUR-API.com/verify",
     STATS_API = "https://YOUR-API.com/stats",
 
