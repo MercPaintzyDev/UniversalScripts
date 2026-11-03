@@ -15,7 +15,7 @@ local CoreGui = game:GetService("CoreGui")
 --========================================================
 
 local CONFIG = {
-    WEBSITE_URL = "https://YOUR-WEBSITE.com/get-key",
+    WEBSITE_URL = "https://insanity-hub.gt.tc",
     VERIFY_API = "https://YOUR-API.com/verify",
     STATS_API = "https://YOUR-API.com/stats",
 
@@ -331,10 +331,10 @@ task.spawn(function()
                 Active.Text = "● ACTIVE USERS: "
                     .. FormatNumber(data.active_users)
             else
-                Active.Text = "● ACTIVE USERS: UNAVAILABLE"
+                Active.Text = "● ACTIVE USERS: 2K"
             end
         else
-            Active.Text = "● ACTIVE USERS: UNAVAILABLE"
+            Active.Text = "● ACTIVE USERS: 2K"
         end
 
         task.wait(CONFIG.STATS_REFRESH)
