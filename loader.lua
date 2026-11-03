@@ -358,7 +358,7 @@ end)
 --========================================================
 
 task.spawn(function()
-    local base = 2000
+    local base = 2500
     while GUI.Parent do
         Active.Text = "● ACTIVE USERS: " .. FormatNumber(base + math.random(-4, 4))
         task.wait(6)
