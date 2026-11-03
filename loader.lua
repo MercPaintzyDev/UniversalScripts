@@ -1,5 +1,5 @@
 --========================================================
--- ARKOSE SECURITY | LICENSE AUTHENTICATION (COMBO_WICK STYLE)
+-- ARKOSE SECURITY | LICENSE AUTHENTICATION (COMBO_WICK THEME)
 --========================================================
 
 local Players = game:GetService("Players")
@@ -17,23 +17,23 @@ local CoreGui = game:GetService("CoreGui")
 local CONFIG = {
     WEBSITE_URL = "https://YOUR-WEBSITE.com/get-key",
     VERIFY_API = "https://YOUR-API.com/verify",
-    STATS_API = "https://YOUR-API.com/stats", -- unused now, kept for compatibility
+    STATS_API = "https://YOUR-API.com/stats", -- unused
     STATS_REFRESH = 30,
     VERSION = "1.0.0"
 }
 
 --========================================================
--- THEME
+-- THEME (COMBO_WICK)
 --========================================================
 
 local Theme = {
     Bg        = Color3.fromRGB(18, 18, 18),
+    Header    = Color3.fromRGB(24, 24, 24),
     Panel     = Color3.fromRGB(27, 27, 27),
     PanelAlt  = Color3.fromRGB(22, 22, 22),
-    Sidebar   = Color3.fromRGB(15, 15, 15),
     Border    = Color3.fromRGB(45, 45, 45),
     Gold      = Color3.fromRGB(245, 184, 0),
-    GoldDim   = Color3.fromRGB(180, 135, 0),
+    GoldDim   = Color3.fromRGB(150, 112, 0),
     Text      = Color3.fromRGB(240, 240, 240),
     TextDim   = Color3.fromRGB(150, 150, 150),
     TextMuted = Color3.fromRGB(105, 105, 105),
@@ -60,9 +60,7 @@ local function HTTP(url, method, body)
         return httpRequest({
             Url = url,
             Method = method,
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
+            Headers = { ["Content-Type"] = "application/json" },
             Body = body and HttpService:JSONEncode(body) or nil
         })
     end)
@@ -111,7 +109,7 @@ local function MakeStroke(parent, color, thickness, transparency)
 end
 
 --========================================================
--- ROOT GUI
+-- GUI (same layout as your screenshot)
 --========================================================
 
 local previous = CoreGui:FindFirstChild("ArkoseSecurity")
@@ -123,355 +121,147 @@ local GUI = New("ScreenGui", {
     ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 }, CoreGui)
 
--- Window
-local WINDOW_W = 560
-local WINDOW_H = 340
-
 local Main = New("Frame", {
     Name = "Main",
-    Size = UDim2.fromOffset(WINDOW_W, WINDOW_H),
-    Position = UDim2.new(0.5, -WINDOW_W/2, 0.5, -WINDOW_H/2),
+    Size = UDim2.fromOffset(380, 325),
+    Position = UDim2.new(0.5, -190, 0.5, -162),
     BackgroundColor3 = Theme.Bg,
     BorderSizePixel = 0,
 }, GUI)
-MakeCorner(Main, 10)
-MakeStroke(Main, Theme.Gold, 1, 0.35)
+MakeCorner(Main, 14)
+MakeStroke(Main, Theme.Gold, 1, 0.55)
 
---========================================================
--- TOP BANNER (PREMIUM STRIP)
---========================================================
-
-local Banner = New("Frame", {
-    Name = "Banner",
-    Size = UDim2.new(1, -220, 0, 26),
-    Position = UDim2.new(0.5, -((WINDOW_W - 220)/2) + 80, 0, -32),
-    BackgroundColor3 = Theme.Gold,
-    BorderSizePixel = 0,
-    ZIndex = 3,
-}, Main)
-MakeCorner(Banner, 6)
-
-New("TextLabel", {
-    Size = UDim2.fromScale(1, 1),
-    BackgroundTransparency = 1,
-    Text = "PREMIUM   ·   Lifetime $49.99   ·   Monthly $9.99",
-    TextColor3 = Theme.Bg,
-    Font = Enum.Font.GothamBold,
-    TextSize = 11,
-    TextXAlignment = Enum.TextXAlignment.Center,
-    ZIndex = 4,
-}, Banner)
-
---========================================================
--- DRAG HANDLE (header area)
---========================================================
-
-local DragBar = New("Frame", {
-    Name = "DragBar",
-    Size = UDim2.new(1, 0, 0, 36),
-    Position = UDim2.fromOffset(0, 0),
-    BackgroundTransparency = 1,
-    ZIndex = 2,
-}, Main)
-
-New("TextLabel", {
-    Size = UDim2.fromOffset(220, 36),
-    Position = UDim2.fromOffset(20, 0),
-    BackgroundTransparency = 1,
-    Text = "COMBO_WICK",
-    TextColor3 = Theme.Gold,
-    Font = Enum.Font.GothamBold,
-    TextSize = 15,
-    TextXAlignment = Enum.TextXAlignment.Left,
-}, DragBar)
-
-New("TextLabel", {
-    Size = UDim2.fromOffset(300, 36),
-    Position = UDim2.fromOffset(230, 0),
-    BackgroundTransparency = 1,
-    Text = "ARKOSE  /  LICENSE",
-    TextColor3 = Theme.TextMuted,
-    Font = Enum.Font.Gotham,
-    TextSize = 10,
-    TextXAlignment = Enum.TextXAlignment.Right,
-}, DragBar)
-
---========================================================
--- SIDEBAR
---========================================================
-
-local SIDEBAR_W = 168
-
-local Sidebar = New("Frame", {
-    Name = "Sidebar",
-    Size = UDim2.new(0, SIDEBAR_W, 1, -46),
-    Position = UDim2.fromOffset(10, 40),
-    BackgroundColor3 = Theme.Sidebar,
+-- HEADER
+local Header = New("Frame", {
+    Size = UDim2.new(1, 0, 0, 68),
+    BackgroundColor3 = Theme.Header,
     BorderSizePixel = 0,
 }, Main)
-MakeCorner(Sidebar, 8)
-
-local SidebarList = New("Frame", {
-    Size = UDim2.new(1, -16, 0, 210),
-    Position = UDim2.fromOffset(8, 14),
-    BackgroundTransparency = 1,
-}, Sidebar)
-
-local NavItems = {
-    { label = "Info",         icon = "◉",   active = true  },
-    { label = "Main",         icon = "▤",   active = false },
-    { label = "Premium Key",  icon = "◈",   active = false },
-    { label = "Games",        icon = "▷",   active = false },
-    { label = "Suggestions",  icon = "✎",   active = false },
-    { label = "UI Settings",  icon = "⚙",   active = false },
-}
-
-local navButtons = {}
-
-for i, item in ipairs(NavItems) do
-    local btn = New("TextButton", {
-        Size = UDim2.new(1, 0, 0, 30),
-        Position = UDim2.fromOffset(0, (i - 1) * 34),
-        BackgroundColor3 = item.active and Theme.PanelAlt or Theme.Sidebar,
-        BackgroundTransparency = item.active and 0 or 1,
-        BorderSizePixel = 0,
-        Text = "",
-        AutoButtonColor = false,
-    }, SidebarList)
-    MakeCorner(btn, 6)
-
-    local accent = New("Frame", {
-        Size = UDim2.new(0, 3, 0, 18),
-        Position = UDim2.fromOffset(0, 6),
-        BackgroundColor3 = Theme.Gold,
-        BackgroundTransparency = item.active and 0 or 1,
-        BorderSizePixel = 0,
-    }, btn)
-    MakeCorner(accent, 2)
-
-    New("TextLabel", {
-        Size = UDim2.fromOffset(22, 30),
-        Position = UDim2.fromOffset(10, 0),
-        BackgroundTransparency = 1,
-        Text = item.icon,
-        TextColor3 = item.active and Theme.Gold or Theme.TextDim,
-        Font = Enum.Font.Gotham,
-        TextSize = 14,
-        TextXAlignment = Enum.TextXAlignment.Center,
-    }, btn)
-
-    local lbl = New("TextLabel", {
-        Size = UDim2.new(1, -36, 1, 0),
-        Position = UDim2.fromOffset(36, 0),
-        BackgroundTransparency = 1,
-        Text = item.label,
-        TextColor3 = item.active and Theme.Text or Theme.TextDim,
-        Font = item.active and Enum.Font.GothamBold or Enum.Font.Gotham,
-        TextSize = 12,
-        TextXAlignment = Enum.TextXAlignment.Left,
-    }, btn)
-
-    navButtons[item.label] = { btn = btn, accent = accent, label = lbl, active = item.active }
-
-    btn.MouseButton1Click:Connect(function()
-        for name, ref in pairs(navButtons) do
-            ref.active = (name == item.label)
-            ref.btn.BackgroundTransparency = ref.active and 0 or 1
-            ref.btn.BackgroundColor3 = ref.active and Theme.PanelAlt or Theme.Sidebar
-            ref.accent.BackgroundTransparency = ref.active and 0 or 1
-            ref.label.TextColor3 = ref.active and Theme.Text or Theme.TextDim
-            ref.label.Font = ref.active and Enum.Font.GothamBold or Enum.Font.Gotham
-        end
-    end)
-end
-
--- Sidebar footer: version
-New("TextLabel", {
-    Size = UDim2.new(1, -16, 0, 20),
-    Position = UDim2.new(0, 8, 1, -28),
-    BackgroundTransparency = 1,
-    Text = "Free Version  ·  v" .. CONFIG.VERSION,
-    TextColor3 = Theme.TextMuted,
-    Font = Enum.Font.Gotham,
-    TextSize = 10,
-    TextXAlignment = Enum.TextXAlignment.Left,
-}, Sidebar)
-
---========================================================
--- CONTENT AREA
---========================================================
-
-local Content = New("Frame", {
-    Name = "Content",
-    Size = UDim2.new(1, -(SIDEBAR_W + 30), 1, -56),
-    Position = UDim2.fromOffset(SIDEBAR_W + 20, 40),
-    BackgroundTransparency = 1,
-}, Main)
-
--- Search bar
-local SearchBox = New("Frame", {
-    Size = UDim2.new(1, 0, 0, 34),
-    Position = UDim2.fromOffset(0, 0),
-    BackgroundColor3 = Theme.Panel,
-    BorderSizePixel = 0,
-}, Content)
-MakeCorner(SearchBox, 6)
+MakeCorner(Header, 14)
 
 New("TextLabel", {
-    Size = UDim2.fromOffset(30, 34),
-    Position = UDim2.fromOffset(6, 0),
+    Size = UDim2.new(1, -30, 0, 30),
+    Position = UDim2.fromOffset(17, 8),
     BackgroundTransparency = 1,
-    Text = "⌕",
-    TextColor3 = Theme.TextDim,
-    Font = Enum.Font.Gotham,
-    TextSize = 16,
-    TextXAlignment = Enum.TextXAlignment.Center,
-}, SearchBox)
-
-New("TextBox", {
-    Size = UDim2.new(1, -40, 1, 0),
-    Position = UDim2.fromOffset(36, 0),
-    BackgroundTransparency = 1,
-    PlaceholderText = "Search",
-    PlaceholderColor3 = Theme.TextMuted,
-    Text = "",
+    Text = "ARKOSE SECURITY",
     TextColor3 = Theme.Text,
-    Font = Enum.Font.Gotham,
-    TextSize = 12,
-    TextXAlignment = Enum.TextXAlignment.Left,
-    ClearTextOnFocus = false,
-}, SearchBox)
-
--- Card: License
-local LicenseCard = New("Frame", {
-    Size = UDim2.new(1, 0, 0, 168),
-    Position = UDim2.fromOffset(0, 46),
-    BackgroundColor3 = Theme.Panel,
-    BorderSizePixel = 0,
-}, Content)
-MakeCorner(LicenseCard, 8)
-MakeStroke(LicenseCard, Theme.Border, 1, 0)
-
--- Card header row
-New("TextLabel", {
-    Size = UDim2.fromOffset(220, 28),
-    Position = UDim2.fromOffset(14, 10),
-    BackgroundTransparency = 1,
-    Text = "◉  License",
-    TextColor3 = Theme.Gold,
     Font = Enum.Font.GothamBold,
-    TextSize = 12,
+    TextSize = 19,
     TextXAlignment = Enum.TextXAlignment.Left,
-}, LicenseCard)
+}, Header)
 
--- Active user count
+New("TextLabel", {
+    Size = UDim2.new(1, -30, 0, 18),
+    Position = UDim2.fromOffset(18, 39),
+    BackgroundTransparency = 1,
+    Text = "LICENSE AUTHENTICATION  /  COMBO_WICK  /  V" .. CONFIG.VERSION,
+    TextColor3 = Theme.Gold,
+    Font = Enum.Font.Gotham,
+    TextSize = 9,
+    TextXAlignment = Enum.TextXAlignment.Left,
+}, Header)
+
+-- ACTIVE USERS (fake 2.0K)
 local Active = New("TextLabel", {
-    Size = UDim2.fromOffset(200, 28),
-    Position = UDim2.new(1, -214, 0, 10),
+    Size = UDim2.new(1, -40, 0, 22),
+    Position = UDim2.fromOffset(20, 83),
     BackgroundTransparency = 1,
     Text = "● ACTIVE USERS: 2.0K",
     TextColor3 = Theme.Gold,
     Font = Enum.Font.GothamMedium,
     TextSize = 11,
-    TextXAlignment = Enum.TextXAlignment.Right,
-}, LicenseCard)
+    TextXAlignment = Enum.TextXAlignment.Left,
+}, Main)
 
--- Key label
+-- KEY LABEL
 New("TextLabel", {
-    Size = UDim2.new(1, -28, 0, 16),
-    Position = UDim2.fromOffset(14, 46),
+    Size = UDim2.new(1, -40, 0, 24),
+    Position = UDim2.fromOffset(20, 116),
     BackgroundTransparency = 1,
     Text = "License Key",
-    TextColor3 = Theme.TextDim,
-    Font = Enum.Font.Gotham,
-    TextSize = 11,
+    TextColor3 = Theme.Text,
+    Font = Enum.Font.GothamMedium,
+    TextSize = 12,
     TextXAlignment = Enum.TextXAlignment.Left,
-}, LicenseCard)
+}, Main)
 
--- Key box
+-- KEY INPUT
 local KeyBox = New("TextBox", {
-    Size = UDim2.new(1, -28, 0, 38),
-    Position = UDim2.fromOffset(14, 66),
-    BackgroundColor3 = Theme.PanelAlt,
+    Size = UDim2.new(1, -40, 0, 43),
+    Position = UDim2.fromOffset(20, 145),
+    BackgroundColor3 = Theme.Panel,
     TextColor3 = Theme.Text,
     PlaceholderText = "ENTER YOUR LICENSE KEY",
     PlaceholderColor3 = Theme.TextMuted,
     Font = Enum.Font.Gotham,
     TextSize = 12,
-    TextXAlignment = Enum.TextXAlignment.Left,
+    TextXAlignment = Enum.TextXAlignment.Center,
     ClearTextOnFocus = false,
     Text = "",
-}, LicenseCard)
-MakeCorner(KeyBox, 6)
-MakeStroke(KeyBox, Theme.Border, 1, 0.1)
+}, Main)
+MakeCorner(KeyBox, 8)
+MakeStroke(KeyBox, Theme.Border, 1, 0)
 
-New("UIPadding", {
-    PaddingLeft = UDim.new(0, 12),
-    PaddingRight = UDim.new(0, 12),
-}, KeyBox)
-
--- Verify button
+-- VERIFY BUTTON (gold)
 local Verify = New("TextButton", {
-    Size = UDim2.new(0, 160, 0, 34),
-    Position = UDim2.fromOffset(14, 116),
+    Size = UDim2.new(1, -40, 0, 42),
+    Position = UDim2.fromOffset(20, 202),
     BackgroundColor3 = Theme.Gold,
-    BorderSizePixel = 0,
     Text = "VERIFY LICENSE",
     TextColor3 = Theme.Bg,
     Font = Enum.Font.GothamBold,
-    TextSize = 11,
+    TextSize = 12,
     AutoButtonColor = false,
-}, LicenseCard)
-MakeCorner(Verify, 6)
+}, Main)
+MakeCorner(Verify, 8)
+MakeStroke(Verify, Theme.GoldDim, 1, 0.3)
 
--- Get key button
+-- GET KEY BUTTON (dark card w/ gold border)
 local GetKey = New("TextButton", {
-    Size = UDim2.new(0, 160, 0, 34),
-    Position = UDim2.new(1, -174, 0, 116),
+    Size = UDim2.new(1, -40, 0, 32),
+    Position = UDim2.fromOffset(20, 252),
     BackgroundColor3 = Theme.PanelAlt,
-    BorderSizePixel = 0,
     Text = "GET KEY",
     TextColor3 = Theme.Text,
     Font = Enum.Font.GothamBold,
-    TextSize = 11,
+    TextSize = 10,
     AutoButtonColor = false,
-}, LicenseCard)
-MakeCorner(GetKey, 6)
-MakeStroke(GetKey, Theme.GoldDim, 1, 0.3)
+}, Main)
+MakeCorner(GetKey, 8)
+MakeStroke(GetKey, Theme.GoldDim, 1, 0.2)
 
--- Status
+-- STATUS
 local Status = New("TextLabel", {
-    Size = UDim2.new(1, -28, 0, 20),
-    Position = UDim2.new(0, 14, 1, -28),
+    Size = UDim2.new(1, -40, 0, 25),
+    Position = UDim2.fromOffset(20, 291),
     BackgroundTransparency = 1,
     Text = "Waiting for license key...",
     TextColor3 = Theme.TextDim,
     Font = Enum.Font.Gotham,
     TextSize = 10,
-    TextXAlignment = Enum.TextXAlignment.Left,
-}, LicenseCard)
+}, Main)
 
 --========================================================
--- HOVER / CLICK FEEDBACK
+-- HOVER
 --========================================================
 
-local function hookHover(btn, baseColor, hoverColor, stroke)
+local function hookHover(btn, base, hover, stroke, strokeBase)
     btn.MouseEnter:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = hoverColor }):Play()
+        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = hover }):Play()
         if stroke then
             TweenService:Create(stroke, TweenInfo.new(0.12), { Transparency = 0 }):Play()
         end
     end)
     btn.MouseLeave:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = baseColor }):Play()
+        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = base }):Play()
         if stroke then
-            TweenService:Create(stroke, TweenInfo.new(0.12), { Transparency = 0.3 }):Play()
+            TweenService:Create(stroke, TweenInfo.new(0.12), { Transparency = strokeBase }):Play()
         end
     end)
 end
 
-hookHover(Verify, Theme.Gold, Color3.fromRGB(255, 205, 40))
-hookHover(GetKey, Theme.PanelAlt, Color3.fromRGB(40, 40, 40))
+hookHover(Verify, Theme.Gold, Color3.fromRGB(255, 205, 40), nil, 0)
+hookHover(GetKey, Theme.PanelAlt, Color3.fromRGB(38, 38, 38), nil, 0)
 
 --========================================================
 -- DRAGGING
@@ -481,7 +271,7 @@ local dragging = false
 local dragStart
 local startPosition
 
-DragBar.InputBegan:Connect(function(input)
+Header.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1
     or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
@@ -570,8 +360,7 @@ end)
 task.spawn(function()
     local base = 2000
     while GUI.Parent do
-        local shown = base + math.random(-4, 4)
-        Active.Text = "● ACTIVE USERS: " .. FormatNumber(shown)
+        Active.Text = "● ACTIVE USERS: " .. FormatNumber(base + math.random(-4, 4))
         task.wait(6)
     end
 end)
