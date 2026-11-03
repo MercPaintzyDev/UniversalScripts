@@ -1,5 +1,5 @@
 --========================================================
--- ARKOSE SECURITY | LICENSE AUTHENTICATION
+-- ARKOSE SECURITY | LICENSE AUTHENTICATION (COMBO_WICK STYLE)
 --========================================================
 
 local Players = game:GetService("Players")
@@ -15,12 +15,31 @@ local CoreGui = game:GetService("CoreGui")
 --========================================================
 
 local CONFIG = {
-    WEBSITE_URL = "https://insanity-hub.gt.tc",
+    WEBSITE_URL = "https://YOUR-WEBSITE.com/get-key",
     VERIFY_API = "https://YOUR-API.com/verify",
-    STATS_API = "https://YOUR-API.com/stats",
-
+    STATS_API = "https://YOUR-API.com/stats", -- unused now, kept for compatibility
     STATS_REFRESH = 30,
     VERSION = "1.0.0"
+}
+
+--========================================================
+-- THEME
+--========================================================
+
+local Theme = {
+    Bg        = Color3.fromRGB(18, 18, 18),
+    Panel     = Color3.fromRGB(27, 27, 27),
+    PanelAlt  = Color3.fromRGB(22, 22, 22),
+    Sidebar   = Color3.fromRGB(15, 15, 15),
+    Border    = Color3.fromRGB(45, 45, 45),
+    Gold      = Color3.fromRGB(245, 184, 0),
+    GoldDim   = Color3.fromRGB(180, 135, 0),
+    Text      = Color3.fromRGB(240, 240, 240),
+    TextDim   = Color3.fromRGB(150, 150, 150),
+    TextMuted = Color3.fromRGB(105, 105, 105),
+    Green     = Color3.fromRGB(70, 220, 145),
+    Red       = Color3.fromRGB(255, 90, 100),
+    Orange    = Color3.fromRGB(255, 180, 80),
 }
 
 --========================================================
@@ -61,36 +80,42 @@ end
 
 local function FormatNumber(n)
     n = tonumber(n) or 0
-
     if n >= 1000000 then
         return string.format("%.1fM", n / 1000000)
     elseif n >= 1000 then
         return string.format("%.1fK", n / 1000)
     end
-
     return tostring(math.floor(n))
 end
 
 local function New(class, properties, parent)
     local object = Instance.new(class)
-
     for property, value in pairs(properties) do
         object[property] = value
     end
-
     object.Parent = parent
     return object
 end
 
+local function MakeCorner(parent, radius)
+    return New("UICorner", { CornerRadius = UDim.new(0, radius) }, parent)
+end
+
+local function MakeStroke(parent, color, thickness, transparency)
+    return New("UIStroke", {
+        Color = color or Theme.Border,
+        Thickness = thickness or 1,
+        Transparency = transparency or 0,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+    }, parent)
+end
+
 --========================================================
--- GUI
+-- ROOT GUI
 --========================================================
 
 local previous = CoreGui:FindFirstChild("ArkoseSecurity")
-
-if previous then
-    previous:Destroy()
-end
+if previous then previous:Destroy() end
 
 local GUI = New("ScreenGui", {
     Name = "ArkoseSecurity",
@@ -98,150 +123,355 @@ local GUI = New("ScreenGui", {
     ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 }, CoreGui)
 
+-- Window
+local WINDOW_W = 560
+local WINDOW_H = 340
+
 local Main = New("Frame", {
     Name = "Main",
-    Size = UDim2.fromOffset(380, 325),
-    Position = UDim2.new(0.5, -190, 0.5, -162),
-    BackgroundColor3 = Color3.fromRGB(11, 16, 29),
-    BorderSizePixel = 0
+    Size = UDim2.fromOffset(WINDOW_W, WINDOW_H),
+    Position = UDim2.new(0.5, -WINDOW_W/2, 0.5, -WINDOW_H/2),
+    BackgroundColor3 = Theme.Bg,
+    BorderSizePixel = 0,
 }, GUI)
+MakeCorner(Main, 10)
+MakeStroke(Main, Theme.Gold, 1, 0.35)
 
-New("UICorner", {
-    CornerRadius = UDim.new(0, 14)
+--========================================================
+-- TOP BANNER (PREMIUM STRIP)
+--========================================================
+
+local Banner = New("Frame", {
+    Name = "Banner",
+    Size = UDim2.new(1, -220, 0, 26),
+    Position = UDim2.new(0.5, -((WINDOW_W - 220)/2) + 80, 0, -32),
+    BackgroundColor3 = Theme.Gold,
+    BorderSizePixel = 0,
+    ZIndex = 3,
 }, Main)
-
-New("UIStroke", {
-    Color = Color3.fromRGB(35, 115, 255),
-    Thickness = 1.5
-}, Main)
-
--- HEADER
-
-local Header = New("Frame", {
-    Size = UDim2.new(1, 0, 0, 68),
-    BackgroundColor3 = Color3.fromRGB(19, 28, 47),
-    BorderSizePixel = 0
-}, Main)
-
-New("UICorner", {
-    CornerRadius = UDim.new(0, 14)
-}, Header)
+MakeCorner(Banner, 6)
 
 New("TextLabel", {
-    Size = UDim2.new(1, -30, 0, 30),
-    Position = UDim2.fromOffset(17, 8),
+    Size = UDim2.fromScale(1, 1),
     BackgroundTransparency = 1,
-    Text = "ARKOSE SECURITY",
-    TextColor3 = Color3.fromRGB(240, 245, 255),
+    Text = "PREMIUM   ·   Lifetime $49.99   ·   Monthly $9.99",
+    TextColor3 = Theme.Bg,
     Font = Enum.Font.GothamBold,
-    TextSize = 19,
-    TextXAlignment = Enum.TextXAlignment.Left
-}, Header)
+    TextSize = 11,
+    TextXAlignment = Enum.TextXAlignment.Center,
+    ZIndex = 4,
+}, Banner)
+
+--========================================================
+-- DRAG HANDLE (header area)
+--========================================================
+
+local DragBar = New("Frame", {
+    Name = "DragBar",
+    Size = UDim2.new(1, 0, 0, 36),
+    Position = UDim2.fromOffset(0, 0),
+    BackgroundTransparency = 1,
+    ZIndex = 2,
+}, Main)
 
 New("TextLabel", {
-    Size = UDim2.new(1, -30, 0, 18),
-    Position = UDim2.fromOffset(18, 39),
+    Size = UDim2.fromOffset(220, 36),
+    Position = UDim2.fromOffset(20, 0),
     BackgroundTransparency = 1,
-    Text = "LICENSE AUTHENTICATION / V" .. CONFIG.VERSION,
-    TextColor3 = Color3.fromRGB(120, 150, 195),
+    Text = "COMBO_WICK",
+    TextColor3 = Theme.Gold,
+    Font = Enum.Font.GothamBold,
+    TextSize = 15,
+    TextXAlignment = Enum.TextXAlignment.Left,
+}, DragBar)
+
+New("TextLabel", {
+    Size = UDim2.fromOffset(300, 36),
+    Position = UDim2.fromOffset(230, 0),
+    BackgroundTransparency = 1,
+    Text = "ARKOSE  /  LICENSE",
+    TextColor3 = Theme.TextMuted,
     Font = Enum.Font.Gotham,
-    TextSize = 9,
-    TextXAlignment = Enum.TextXAlignment.Left
-}, Header)
+    TextSize = 10,
+    TextXAlignment = Enum.TextXAlignment.Right,
+}, DragBar)
 
--- ACTIVE USERS
+--========================================================
+-- SIDEBAR
+--========================================================
 
-local Active = New("TextLabel", {
-    Size = UDim2.new(1, -40, 0, 22),
-    Position = UDim2.fromOffset(20, 83),
+local SIDEBAR_W = 168
+
+local Sidebar = New("Frame", {
+    Name = "Sidebar",
+    Size = UDim2.new(0, SIDEBAR_W, 1, -46),
+    Position = UDim2.fromOffset(10, 40),
+    BackgroundColor3 = Theme.Sidebar,
+    BorderSizePixel = 0,
+}, Main)
+MakeCorner(Sidebar, 8)
+
+local SidebarList = New("Frame", {
+    Size = UDim2.new(1, -16, 0, 210),
+    Position = UDim2.fromOffset(8, 14),
     BackgroundTransparency = 1,
-    Text = "● ACTIVE USERS: CONNECTING...",
-    TextColor3 = Color3.fromRGB(70, 175, 255),
+}, Sidebar)
+
+local NavItems = {
+    { label = "Info",         icon = "◉",   active = true  },
+    { label = "Main",         icon = "▤",   active = false },
+    { label = "Premium Key",  icon = "◈",   active = false },
+    { label = "Games",        icon = "▷",   active = false },
+    { label = "Suggestions",  icon = "✎",   active = false },
+    { label = "UI Settings",  icon = "⚙",   active = false },
+}
+
+local navButtons = {}
+
+for i, item in ipairs(NavItems) do
+    local btn = New("TextButton", {
+        Size = UDim2.new(1, 0, 0, 30),
+        Position = UDim2.fromOffset(0, (i - 1) * 34),
+        BackgroundColor3 = item.active and Theme.PanelAlt or Theme.Sidebar,
+        BackgroundTransparency = item.active and 0 or 1,
+        BorderSizePixel = 0,
+        Text = "",
+        AutoButtonColor = false,
+    }, SidebarList)
+    MakeCorner(btn, 6)
+
+    local accent = New("Frame", {
+        Size = UDim2.new(0, 3, 0, 18),
+        Position = UDim2.fromOffset(0, 6),
+        BackgroundColor3 = Theme.Gold,
+        BackgroundTransparency = item.active and 0 or 1,
+        BorderSizePixel = 0,
+    }, btn)
+    MakeCorner(accent, 2)
+
+    New("TextLabel", {
+        Size = UDim2.fromOffset(22, 30),
+        Position = UDim2.fromOffset(10, 0),
+        BackgroundTransparency = 1,
+        Text = item.icon,
+        TextColor3 = item.active and Theme.Gold or Theme.TextDim,
+        Font = Enum.Font.Gotham,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Center,
+    }, btn)
+
+    local lbl = New("TextLabel", {
+        Size = UDim2.new(1, -36, 1, 0),
+        Position = UDim2.fromOffset(36, 0),
+        BackgroundTransparency = 1,
+        Text = item.label,
+        TextColor3 = item.active and Theme.Text or Theme.TextDim,
+        Font = item.active and Enum.Font.GothamBold or Enum.Font.Gotham,
+        TextSize = 12,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    }, btn)
+
+    navButtons[item.label] = { btn = btn, accent = accent, label = lbl, active = item.active }
+
+    btn.MouseButton1Click:Connect(function()
+        for name, ref in pairs(navButtons) do
+            ref.active = (name == item.label)
+            ref.btn.BackgroundTransparency = ref.active and 0 or 1
+            ref.btn.BackgroundColor3 = ref.active and Theme.PanelAlt or Theme.Sidebar
+            ref.accent.BackgroundTransparency = ref.active and 0 or 1
+            ref.label.TextColor3 = ref.active and Theme.Text or Theme.TextDim
+            ref.label.Font = ref.active and Enum.Font.GothamBold or Enum.Font.Gotham
+        end
+    end)
+end
+
+-- Sidebar footer: version
+New("TextLabel", {
+    Size = UDim2.new(1, -16, 0, 20),
+    Position = UDim2.new(0, 8, 1, -28),
+    BackgroundTransparency = 1,
+    Text = "Free Version  ·  v" .. CONFIG.VERSION,
+    TextColor3 = Theme.TextMuted,
+    Font = Enum.Font.Gotham,
+    TextSize = 10,
+    TextXAlignment = Enum.TextXAlignment.Left,
+}, Sidebar)
+
+--========================================================
+-- CONTENT AREA
+--========================================================
+
+local Content = New("Frame", {
+    Name = "Content",
+    Size = UDim2.new(1, -(SIDEBAR_W + 30), 1, -56),
+    Position = UDim2.fromOffset(SIDEBAR_W + 20, 40),
+    BackgroundTransparency = 1,
+}, Main)
+
+-- Search bar
+local SearchBox = New("Frame", {
+    Size = UDim2.new(1, 0, 0, 34),
+    Position = UDim2.fromOffset(0, 0),
+    BackgroundColor3 = Theme.Panel,
+    BorderSizePixel = 0,
+}, Content)
+MakeCorner(SearchBox, 6)
+
+New("TextLabel", {
+    Size = UDim2.fromOffset(30, 34),
+    Position = UDim2.fromOffset(6, 0),
+    BackgroundTransparency = 1,
+    Text = "⌕",
+    TextColor3 = Theme.TextDim,
+    Font = Enum.Font.Gotham,
+    TextSize = 16,
+    TextXAlignment = Enum.TextXAlignment.Center,
+}, SearchBox)
+
+New("TextBox", {
+    Size = UDim2.new(1, -40, 1, 0),
+    Position = UDim2.fromOffset(36, 0),
+    BackgroundTransparency = 1,
+    PlaceholderText = "Search",
+    PlaceholderColor3 = Theme.TextMuted,
+    Text = "",
+    TextColor3 = Theme.Text,
+    Font = Enum.Font.Gotham,
+    TextSize = 12,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ClearTextOnFocus = false,
+}, SearchBox)
+
+-- Card: License
+local LicenseCard = New("Frame", {
+    Size = UDim2.new(1, 0, 0, 168),
+    Position = UDim2.fromOffset(0, 46),
+    BackgroundColor3 = Theme.Panel,
+    BorderSizePixel = 0,
+}, Content)
+MakeCorner(LicenseCard, 8)
+MakeStroke(LicenseCard, Theme.Border, 1, 0)
+
+-- Card header row
+New("TextLabel", {
+    Size = UDim2.fromOffset(220, 28),
+    Position = UDim2.fromOffset(14, 10),
+    BackgroundTransparency = 1,
+    Text = "◉  License",
+    TextColor3 = Theme.Gold,
+    Font = Enum.Font.GothamBold,
+    TextSize = 12,
+    TextXAlignment = Enum.TextXAlignment.Left,
+}, LicenseCard)
+
+-- Active user count
+local Active = New("TextLabel", {
+    Size = UDim2.fromOffset(200, 28),
+    Position = UDim2.new(1, -214, 0, 10),
+    BackgroundTransparency = 1,
+    Text = "● ACTIVE USERS: 2.0K",
+    TextColor3 = Theme.Gold,
     Font = Enum.Font.GothamMedium,
     TextSize = 11,
-    TextXAlignment = Enum.TextXAlignment.Left
-}, Main)
+    TextXAlignment = Enum.TextXAlignment.Right,
+}, LicenseCard)
 
--- KEY LABEL
-
+-- Key label
 New("TextLabel", {
-    Size = UDim2.new(1, -40, 0, 24),
-    Position = UDim2.fromOffset(20, 116),
+    Size = UDim2.new(1, -28, 0, 16),
+    Position = UDim2.fromOffset(14, 46),
     BackgroundTransparency = 1,
     Text = "License Key",
-    TextColor3 = Color3.fromRGB(225, 235, 250),
-    Font = Enum.Font.GothamMedium,
-    TextSize = 12,
-    TextXAlignment = Enum.TextXAlignment.Left
-}, Main)
+    TextColor3 = Theme.TextDim,
+    Font = Enum.Font.Gotham,
+    TextSize = 11,
+    TextXAlignment = Enum.TextXAlignment.Left,
+}, LicenseCard)
 
--- KEY INPUT
-
+-- Key box
 local KeyBox = New("TextBox", {
-    Size = UDim2.new(1, -40, 0, 43),
-    Position = UDim2.fromOffset(20, 145),
-    BackgroundColor3 = Color3.fromRGB(24, 34, 53),
-    TextColor3 = Color3.fromRGB(255, 255, 255),
+    Size = UDim2.new(1, -28, 0, 38),
+    Position = UDim2.fromOffset(14, 66),
+    BackgroundColor3 = Theme.PanelAlt,
+    TextColor3 = Theme.Text,
     PlaceholderText = "ENTER YOUR LICENSE KEY",
-    PlaceholderColor3 = Color3.fromRGB(110, 125, 150),
+    PlaceholderColor3 = Theme.TextMuted,
     Font = Enum.Font.Gotham,
     TextSize = 12,
+    TextXAlignment = Enum.TextXAlignment.Left,
     ClearTextOnFocus = false,
-    Text = ""
-}, Main)
+    Text = "",
+}, LicenseCard)
+MakeCorner(KeyBox, 6)
+MakeStroke(KeyBox, Theme.Border, 1, 0.1)
 
-New("UICorner", {
-    CornerRadius = UDim.new(0, 8)
+New("UIPadding", {
+    PaddingLeft = UDim.new(0, 12),
+    PaddingRight = UDim.new(0, 12),
 }, KeyBox)
 
-New("UIStroke", {
-    Color = Color3.fromRGB(48, 75, 115),
-    Thickness = 1
-}, KeyBox)
-
--- VERIFY BUTTON
-
+-- Verify button
 local Verify = New("TextButton", {
-    Size = UDim2.new(1, -40, 0, 42),
-    Position = UDim2.fromOffset(20, 202),
-    BackgroundColor3 = Color3.fromRGB(30, 105, 235),
+    Size = UDim2.new(0, 160, 0, 34),
+    Position = UDim2.fromOffset(14, 116),
+    BackgroundColor3 = Theme.Gold,
+    BorderSizePixel = 0,
     Text = "VERIFY LICENSE",
-    TextColor3 = Color3.new(1, 1, 1),
+    TextColor3 = Theme.Bg,
     Font = Enum.Font.GothamBold,
-    TextSize = 12
-}, Main)
+    TextSize = 11,
+    AutoButtonColor = false,
+}, LicenseCard)
+MakeCorner(Verify, 6)
 
-New("UICorner", {
-    CornerRadius = UDim.new(0, 8)
-}, Verify)
-
--- GET KEY BUTTON
-
+-- Get key button
 local GetKey = New("TextButton", {
-    Size = UDim2.new(1, -40, 0, 32),
-    Position = UDim2.fromOffset(20, 252),
-    BackgroundColor3 = Color3.fromRGB(125, 35, 55),
+    Size = UDim2.new(0, 160, 0, 34),
+    Position = UDim2.new(1, -174, 0, 116),
+    BackgroundColor3 = Theme.PanelAlt,
+    BorderSizePixel = 0,
     Text = "GET KEY",
-    TextColor3 = Color3.new(1, 1, 1),
+    TextColor3 = Theme.Text,
     Font = Enum.Font.GothamBold,
-    TextSize = 10
-}, Main)
+    TextSize = 11,
+    AutoButtonColor = false,
+}, LicenseCard)
+MakeCorner(GetKey, 6)
+MakeStroke(GetKey, Theme.GoldDim, 1, 0.3)
 
-New("UICorner", {
-    CornerRadius = UDim.new(0, 8)
-}, GetKey)
-
--- STATUS
-
+-- Status
 local Status = New("TextLabel", {
-    Size = UDim2.new(1, -40, 0, 25),
-    Position = UDim2.fromOffset(20, 291),
+    Size = UDim2.new(1, -28, 0, 20),
+    Position = UDim2.new(0, 14, 1, -28),
     BackgroundTransparency = 1,
     Text = "Waiting for license key...",
-    TextColor3 = Color3.fromRGB(145, 160, 185),
+    TextColor3 = Theme.TextDim,
     Font = Enum.Font.Gotham,
-    TextSize = 10
-}, Main)
+    TextSize = 10,
+    TextXAlignment = Enum.TextXAlignment.Left,
+}, LicenseCard)
+
+--========================================================
+-- HOVER / CLICK FEEDBACK
+--========================================================
+
+local function hookHover(btn, baseColor, hoverColor, stroke)
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = hoverColor }):Play()
+        if stroke then
+            TweenService:Create(stroke, TweenInfo.new(0.12), { Transparency = 0 }):Play()
+        end
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = baseColor }):Play()
+        if stroke then
+            TweenService:Create(stroke, TweenInfo.new(0.12), { Transparency = 0.3 }):Play()
+        end
+    end)
+end
+
+hookHover(Verify, Theme.Gold, Color3.fromRGB(255, 205, 40))
+hookHover(GetKey, Theme.PanelAlt, Color3.fromRGB(40, 40, 40))
 
 --========================================================
 -- DRAGGING
@@ -251,10 +481,9 @@ local dragging = false
 local dragStart
 local startPosition
 
-Header.InputBegan:Connect(function(input)
+DragBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1
     or input.UserInputType == Enum.UserInputType.Touch then
-
         dragging = true
         dragStart = input.Position
         startPosition = Main.Position
@@ -272,9 +501,7 @@ UserInputService.InputChanged:Connect(function(input)
         input.UserInputType == Enum.UserInputType.MouseMovement
         or input.UserInputType == Enum.UserInputType.Touch
     ) then
-
         local delta = input.Position - dragStart
-
         Main.Position = UDim2.new(
             startPosition.X.Scale,
             startPosition.X.Offset + delta.X,
@@ -285,7 +512,7 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 --========================================================
--- GET KEY WEBSITE (CLIPBOARD + BROWSER)
+-- GET KEY (COPY + OPEN)
 --========================================================
 
 local function copyToClipboard(text)
@@ -294,38 +521,27 @@ local function copyToClipboard(text)
         or (getgenv and getgenv().setclipboard)
         or setclipboard
         or toclipboard
-
     if setCb then
         local ok = pcall(setCb, text)
-        if ok then
-            return true
-        end
+        if ok then return true end
     end
-
     return false
 end
 
 local function openInBrowser(url)
-    local openFn =
-        (syn and syn.open_url)
-        or (getgenv and getgenv().openurl)
-
+    local openFn = (syn and syn.open_url) or (getgenv and getgenv().openurl)
     if openFn then
         local ok = pcall(openFn, url)
-        if ok then
-            return true
-        end
+        if ok then return true end
     end
-
     return false
 end
 
 GetKey.MouseButton1Click:Connect(function()
     local url = CONFIG.WEBSITE_URL
-
     if type(url) ~= "string" or url == "" or url:find("YOUR%-WEBSITE") then
         Status.Text = "Configure your website URL first."
-        Status.TextColor3 = Color3.fromRGB(255, 90, 100)
+        Status.TextColor3 = Theme.Red
         return
     end
 
@@ -334,33 +550,28 @@ GetKey.MouseButton1Click:Connect(function()
 
     if copied and opened then
         Status.Text = "Link copied and browser opened."
-        Status.TextColor3 = Color3.fromRGB(70, 220, 145)
-    elseif copied and not opened then
+        Status.TextColor3 = Theme.Green
+    elseif copied then
         Status.Text = "Link copied. Open your browser and paste it."
-        Status.TextColor3 = Color3.fromRGB(255, 180, 80)
-    elseif opened and not copied then
+        Status.TextColor3 = Theme.Orange
+    elseif opened then
         Status.Text = "Browser opened. Copy the URL from the address bar."
-        Status.TextColor3 = Color3.fromRGB(255, 180, 80)
+        Status.TextColor3 = Theme.Orange
     else
-        Status.Text = "Executor has no clipboard or open_url. Open manually: " .. url
-        Status.TextColor3 = Color3.fromRGB(255, 90, 100)
+        Status.Text = "Manual open: " .. url
+        Status.TextColor3 = Theme.Red
     end
 end)
 
 --========================================================
--- ACTIVE USER COUNT (LOCAL / NO NETWORK)
+-- FAKE ACTIVE USER COUNT (2.0K)
 --========================================================
 
 task.spawn(function()
     local base = 2000
-
     while GUI.Parent do
-        -- Small jitter so the number looks live instead of frozen.
-        -- Stays in 1996-2004 range, always renders as "2.0K".
         local shown = base + math.random(-4, 4)
         Active.Text = "● ACTIVE USERS: " .. FormatNumber(shown)
-        Active.TextColor3 = Color3.fromRGB(70, 175, 255)
-
         task.wait(6)
     end
 end)
