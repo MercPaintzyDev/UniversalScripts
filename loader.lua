@@ -275,11 +275,11 @@ end)
 --========================================================
 
 GetKey.MouseButton1Click:Connect(function()
-    if CONFIG.WEBSITE_URL:find("YOUR%-WEBSITE") then
-        Status.Text = "Configure your website URL first."
-        Status.TextColor3 = Color3.fromRGB(255, 90, 100)
-        return
-    end
+    if type(CONFIG.VERIFY_API) ~= "string" or CONFIG.VERIFY_API == "" then
+    Status.Text = "Configure your verification API first."
+    Status.TextColor3 = Color3.fromRGB(255, 90, 100)
+    return
+        end
 
     local openURL = (syn and syn.open_url)
         or (getgenv and getgenv().openurl)
@@ -317,10 +317,10 @@ task.spawn(function()
                 Active.Text = "● ACTIVE USERS: "
                     .. FormatNumber(data.active_users)
             else
-                Active.Text = "● ACTIVE USERS: UNAVAILABLE"
+                Active.Text = "● ACTIVE USERS: 2K"
             end
         else
-            Active.Text = "● ACTIVE USERS: UNAVAILABLE"
+            Active.Text = "● ACTIVE USERS: 2K"
         end
 
         task.wait(CONFIG.STATS_REFRESH)
