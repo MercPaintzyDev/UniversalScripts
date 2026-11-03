@@ -143,7 +143,7 @@ New("TextLabel", {
     Size = UDim2.new(1, -30, 0, 30),
     Position = UDim2.fromOffset(17, 8),
     BackgroundTransparency = 1,
-    Text = "ARKOSE SECURITY",
+    Text = "ARCHIVE LABS SECURITY",
     TextColor3 = Theme.Text,
     Font = Enum.Font.GothamBold,
     TextSize = 19,
