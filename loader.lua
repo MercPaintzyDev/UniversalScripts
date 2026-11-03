@@ -2676,32 +2676,29 @@ end
 local verifying = false
 
 Verify.MouseButton1Click:Connect(function()
-
     if verifying then return end
 
     local key = KeyBox.Text:gsub("^%s+", ""):gsub("%s+$", "")
 
     if key == "" then
         Status.Text = "Please enter your license key."
-        Status.TextColor3 = Color3.fromRGB(255, 90, 100)
+        Status.TextColor3 = Theme.Red
         return
     end
 
     if CONFIG.VERIFY_API:find("YOUR%-API") then
         Status.Text = "Configure your verification API first."
-        Status.TextColor3 = Color3.fromRGB(255, 90, 100)
+        Status.TextColor3 = Theme.Red
         return
     end
 
     verifying = true
     Verify.Text = "VERIFYING..."
     Verify.Active = false
-
     Status.Text = "Checking license..."
-    Status.TextColor3 = Color3.fromRGB(70, 175, 255)
+    Status.TextColor3 = Theme.Gold
 
     task.spawn(function()
-
         local response, err = HTTP(CONFIG.VERIFY_API, "POST", {
             key = key,
             user_id = tostring(Player.UserId),
@@ -2712,53 +2709,40 @@ Verify.MouseButton1Click:Connect(function()
         local message = "Verification failed."
 
         if response and response.Success then
-
             local ok, data = pcall(function()
                 return HttpService:JSONDecode(response.Body)
             end)
 
             if ok and type(data) == "table" then
                 authorized = data.valid == true
-                message = tostring(
-                    data.message or "Verification complete."
-                )
+                message = tostring(data.message or "Verification complete.")
             else
                 message = "Invalid API response."
             end
-
         else
             message = err or (
-                response and "Server error: "
-                .. tostring(response.StatusCode)
+                response and "Server error: " .. tostring(response.StatusCode)
             ) or "Unable to connect to server."
         end
 
         if authorized then
-
             Status.Text = "PERMISSION GRANTED"
-            Status.TextColor3 = Color3.fromRGB(70, 220, 145)
+            Status.TextColor3 = Theme.Green
             Verify.Text = "ACCESS GRANTED"
-
             task.wait(0.8)
-
             GUI:Destroy()
             StartMainScript()
-
         else
-
             Status.Text = message
-            Status.TextColor3 = Color3.fromRGB(255, 90, 100)
+            Status.TextColor3 = Theme.Red
             Verify.Text = "VERIFY LICENSE"
             Verify.Active = true
-
         end
 
         verifying = false
-
     end)
 end)
 
 --========================================================
 -- END ARKOSE SECURITY
 --========================================================
-
