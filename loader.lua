@@ -15,32 +15,57 @@ local CoreGui = game:GetService("CoreGui")
 --========================================================
 
 local CONFIG = {
-    WEBSITE_URL = "https://insanity-hub.gt.tc"
+    VERSION       = "1.0",
+    WEBSITE_URL   = "https://insanity-hub.gt.tc",
+    STATS_API     = "https://insanity-hub.gt.tc/api/stats",
+    STATS_REFRESH = 30,
+    VERIFY_API    = "https://insanity-hub.gt.tc/api/verify",
+}
+
 --========================================================
 -- HELPERS
 --========================================================
 
-local function FormatNumber(n)
-    n = tonumber(n) or 0
-
-    if n >= 1000000 then
-        return string.format("%.1fM", n / 1000000)
-    elseif n >= 1000 then
-        return string.format("%.1fK", n / 1000)
+local function HTTP(url, method, body)
+    if type(url) ~= "string" or url == "" then
+        return { Success = false, Body = "", StatusCode = 0, StatusMessage = "empty url" }
     end
 
-    return tostring(math.floor(n))
-end
+    method = string.upper(tostring(method or "GET"))
 
-local function New(class, properties, parent)
-    local object = Instance.new(class)
-
-    for property, value in pairs(properties) do
-        object[property] = value
+    local payload = nil
+    if body ~= nil then
+        local ok, encoded = pcall(function()
+            return HttpService:JSONEncode(body)
+        end)
+        if not ok then
+            return { Success = false, Body = "", StatusCode = 0, StatusMessage = "json encode failed" }
+        end
+        payload = encoded
     end
 
-    object.Parent = parent
-    return object
+    local ok, response = pcall(function()
+        return HttpService:RequestAsync({
+            Url     = url,
+            Method  = method,
+            Headers = {
+                ["Content-Type"] = "application/json",
+                ["Accept"]       = "application/json",
+            },
+            Body    = payload,
+        })
+    end)
+
+    if not ok or not response then
+        return { Success = false, Body = "", StatusCode = 0, StatusMessage = tostring(response) }
+    end
+
+    return {
+        Success       = response.Success == true,
+        Body          = response.Body or "",
+        StatusCode    = response.StatusCode or 0,
+        StatusMessage = response.StatusMessage or "",
+    }
 end
 
 --========================================================
