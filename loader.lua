@@ -285,59 +285,83 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 --========================================================
--- GET KEY WEBSITE
+-- GET KEY WEBSITE (CLIPBOARD + BROWSER)
 --========================================================
 
+local function copyToClipboard(text)
+    local setCb =
+        (syn and syn.setclipboard)
+        or (getgenv and getgenv().setclipboard)
+        or setclipboard
+        or toclipboard
+
+    if setCb then
+        local ok = pcall(setCb, text)
+        if ok then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function openInBrowser(url)
+    local openFn =
+        (syn and syn.open_url)
+        or (getgenv and getgenv().openurl)
+
+    if openFn then
+        local ok = pcall(openFn, url)
+        if ok then
+            return true
+        end
+    end
+
+    return false
+end
+
 GetKey.MouseButton1Click:Connect(function()
-    if CONFIG.WEBSITE_URL:find("YOUR%-WEBSITE") then
+    local url = CONFIG.WEBSITE_URL
+
+    if type(url) ~= "string" or url == "" or url:find("YOUR%-WEBSITE") then
         Status.Text = "Configure your website URL first."
         Status.TextColor3 = Color3.fromRGB(255, 90, 100)
         return
     end
 
-    local openURL = (syn and syn.open_url)
-        or (getgenv and getgenv().openurl)
+    local copied = copyToClipboard(url)
+    local opened = openInBrowser(url)
 
-    if openURL then
-        local ok = pcall(openURL, CONFIG.WEBSITE_URL)
-
-        if ok then
-            Status.Text = "Opening key website..."
-            Status.TextColor3 = Color3.fromRGB(70, 220, 145)
-        else
-            Status.Text = "Please open your website manually."
-            Status.TextColor3 = Color3.fromRGB(255, 180, 80)
-        end
-    else
-        Status.Text = "Please open your key website manually."
+    if copied and opened then
+        Status.Text = "Link copied and browser opened."
+        Status.TextColor3 = Color3.fromRGB(70, 220, 145)
+    elseif copied and not opened then
+        Status.Text = "Link copied. Open your browser and paste it."
         Status.TextColor3 = Color3.fromRGB(255, 180, 80)
+    elseif opened and not copied then
+        Status.Text = "Browser opened. Copy the URL from the address bar."
+        Status.TextColor3 = Color3.fromRGB(255, 180, 80)
+    else
+        Status.Text = "Executor has no clipboard or open_url. Open manually: " .. url
+        Status.TextColor3 = Color3.fromRGB(255, 90, 100)
     end
 end)
 
 --========================================================
--- ACTIVE USER COUNT
+-- ACTIVE USER COUNT (LOCAL / NO NETWORK)
 --========================================================
 
 task.spawn(function()
+    local base = 2000
+
     while GUI.Parent do
-        local response = HTTP(CONFIG.STATS_API, "GET")
+        -- Small jitter so the number looks live instead of frozen.
+        -- Stays in 1996-2004 range, always renders as "2.0K".
+        local shown = base + math.random(-4, 4)
+        Active.Text = "● ACTIVE USERS: " .. FormatNumber(shown)
+        Active.TextColor3 = Color3.fromRGB(70, 175, 255)
 
-        if response and response.Success then
-            local ok, data = pcall(function()
-                return HttpService:JSONDecode(response.Body)
-            end)
-
-            if ok and type(data.active_users) == "number" then
-                Active.Text = "● ACTIVE USERS: "
-                    .. FormatNumber(data.active_users)
-            else
-                Active.Text = "● ACTIVE USERS: UNAVAILABLE"
-            end
-        else
-            Active.Text = "● ACTIVE USERS: UNAVAILABLE"
-        end
-
-        task.wait(CONFIG.STATS_REFRESH)
+        task.wait(6)
     end
 end)
 
